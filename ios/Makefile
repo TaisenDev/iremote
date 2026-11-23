@@ -6,4 +6,5 @@ iRemote_FILES = Sources/main.m Sources/IRSession.m Sources/IRPhoneStore.m Source
 iRemote_FRAMEWORKS = UIKit Foundation Security QuartzCore ImageIO CoreGraphics AVFoundation
 iRemote_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
 iRemote_RESOURCE_DIRS = Resources
+iRemote_CODESIGN_FLAGS = -S$(CURDIR)/Entitlements.plist
 include $(THEOS_MAKE_PATH)/application.mk
