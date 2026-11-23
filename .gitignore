@@ -1,0 +1,9 @@
+dist/
+.theos/
+packages/
+*.user
+*.pfx
+*.p12
+*.pem
+*.key
+*.local.*

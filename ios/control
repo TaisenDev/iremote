@@ -1,0 +1,8 @@
+Package: com.taisendev.iremote
+Name: iremote
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Escritorio remoto por LAN para iPad
+Maintainer: TaisenDev
+Author: TaisenDev
+Section: Utilities

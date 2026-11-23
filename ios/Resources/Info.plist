@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleExecutable</key><string>iRemote</string>
+<key>CFBundleIdentifier</key><string>com.taisendev.iremote</string>
+<key>CFBundleName</key><string>iremote</string>
+<key>CFBundleDisplayName</key><string>iremote</string>
+<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleShortVersionString</key><string>0.1.0</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>MinimumOSVersion</key><string>8.0</string>
+<key>UIDeviceFamily</key><array><integer>2</integer></array>
+<key>UIViewControllerBasedStatusBarAppearance</key><true/>
+<key>UISupportedInterfaceOrientations~ipad</key><array>
+<string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationPortraitUpsideDown</string>
+<string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string>
+</array>
+</dict></plist>
