@@ -6,7 +6,7 @@ Los mensajes se componen de un byte de tipo, cuatro bytes de longitud en orden d
 
 ## Vinculación y descubrimiento
 
-Windows muestra localmente un QR con la dirección de respaldo, el puerto, la huella y un código temporal. El iPad conserva la huella y el secreto tras el primer emparejamiento. Para localizar esa identidad después, envía `IRLAN1` y 12 bytes aleatorios por UDP al puerto 47921 de la subred. Windows devuelve los 18 bytes, dos bytes del puerto TCP y la huella de 12 bytes. El iPad usa la IP que originó la respuesta, vuelve a validar la huella dentro de TLS y solo entonces transmite la credencial. El anuncio por UDP no concede acceso.
+Windows muestra localmente un QR con la dirección de respaldo, el puerto, la huella y un código temporal. El iPad conserva la huella y el secreto tras el primer emparejamiento. Para localizar esa identidad después, envía `IRLAN1` y 12 bytes aleatorios por UDP a los puertos 28251–28255 de la subred. Windows escucha en el primer puerto libre en ambos protocolos y devuelve los 18 bytes, dos bytes del puerto TCP y la huella de 12 bytes. El iPad usa la IP que originó la respuesta, vuelve a validar la huella dentro de TLS y solo entonces transmite la credencial. El anuncio por UDP no concede acceso.
 
 | Tipo | Dirección | Cuerpo |
 | --- | --- | --- |

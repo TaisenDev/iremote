@@ -8,7 +8,7 @@ namespace IRemote
 {
     internal sealed class PairingDialog : Form
     {
-        public PairingDialog(Identity identity, LanAddress address)
+        public PairingDialog(Identity identity, LanAddress address, int port)
         {
             Text = "Vincular iPad";
             StartPosition = FormStartPosition.CenterParent;
@@ -35,7 +35,7 @@ namespace IRemote
 
             string code = identity.OpenPairing();
             string payload = string.Join("|", "iremote-pair:1", address.Address.ToString(),
-                LanDiscovery.Port.ToString(System.Globalization.CultureInfo.InvariantCulture), identity.Fingerprint, code);
+                port.ToString(System.Globalization.CultureInfo.InvariantCulture), identity.Fingerprint, code);
             using (var generator = new QRCodeGenerator())
             using (var data = generator.CreateQrCode(payload, QRCodeGenerator.ECCLevel.Q))
             using (var qr = new PngByteQRCode(data))

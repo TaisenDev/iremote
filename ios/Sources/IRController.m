@@ -155,7 +155,7 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
 - (void)dealloc { [[NSNotificationCenter defaultCenter] removeObserver:self]; }
 - (void)showSetup {
     _address.text = _saved[@"address"];
-    _port.text = _saved[@"port"] ?: @"47921";
+    _port.text = _saved[@"port"] ?: @"28251";
     _code.text = nil;
     _setup.hidden = NO;
     _active.hidden = YES;
@@ -270,12 +270,12 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
     NSUInteger current = ++_generation;
     _setupStatus.text = @"Buscando la PC en tu red…";
     [self.view setNeedsLayout];
-    IRFindHost(_target[@"fingerprint"], _target[@"address"], ^(NSString *address) {
+    IRFindHost(_target[@"fingerprint"], _target[@"address"], ^(NSString *address, uint16_t port) {
         if (_generation != current || !_target) return;
         if (address) {
             NSMutableDictionary *updated = [_target mutableCopy];
             updated[@"address"] = address;
-            updated[@"port"] = @"47921";
+            updated[@"port"] = [NSString stringWithFormat:@"%u", port];
             _target = updated;
         }
         [self attempt];

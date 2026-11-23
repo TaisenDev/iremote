@@ -10,14 +10,17 @@ namespace IRemote
 {
     internal sealed class LanDiscovery : IDisposable
     {
-        internal const int Port = 47921;
+        internal const int FirstPort = 28251;
+        internal const int LastPort = 28255;
         private static readonly byte[] Prefix = Encoding.ASCII.GetBytes("IRLAN1");
         private readonly UdpClient udp;
         private readonly Thread thread;
         private readonly byte[] identity;
+        public int Port { get; private set; }
 
-        public LanDiscovery(string fingerprint)
+        public LanDiscovery(string fingerprint, int port)
         {
+            Port = port;
             identity = Enumerable.Range(0, 12).Select(i => Convert.ToByte(fingerprint.Substring(i * 2, 2), 16)).ToArray();
             udp = new UdpClient(AddressFamily.InterNetwork);
             udp.ExclusiveAddressUse = true;

@@ -126,7 +126,7 @@ namespace IRemote
         {
             var address = LanAddress.List().FirstOrDefault();
             if (receiver == null || address == null) return;
-            using (pairing = new PairingDialog(identity, address))
+            using (pairing = new PairingDialog(identity, address, discovery.Port))
             {
                 pairing.Icon = Icon;
                 pairing.ShowDialog(this);
@@ -138,17 +138,22 @@ namespace IRemote
         {
             if (locked || receiver != null) return;
             error = null;
-            try
+            for (int port = LanDiscovery.FirstPort; port <= LanDiscovery.LastPort; port++)
             {
-                receiver = new Receiver(identity, null, LanDiscovery.Port);
-                discovery = new LanDiscovery(identity.Fingerprint);
+                try
+                {
+                    receiver = new Receiver(identity, null, port);
+                    discovery = new LanDiscovery(identity.Fingerprint, port);
+                    error = null;
+                    break;
+                }
+                catch (SocketException failure)
+                {
+                    if (receiver != null) { receiver.Dispose(); receiver = null; }
+                    error = "No se pudo iniciar: " + failure.SocketErrorCode;
+                }
             }
-            catch (SocketException failure)
-            {
-                StopReceiver();
-                error = "No se pudo iniciar: " + failure.SocketErrorCode;
-                enabled = false;
-            }
+            enabled = receiver != null;
             RefreshStatus();
         }
 
