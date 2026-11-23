@@ -1,3 +1,4 @@
+param([switch]$Background)
 $ErrorActionPreference = 'Stop'
 $exe = Join-Path $PSScriptRoot 'iRemote.Receiver.exe'
 if (-not (Test-Path -LiteralPath $exe)) { throw 'Ejecuta windows/Build.ps1 y abre el lanzador de dist/windows.' }
@@ -17,4 +18,10 @@ if (-not $certificate -or -not $certificate.HasPrivateKey -or $certificate.NotAf
         -KeyExportPolicy NonExportable -NotAfter (Get-Date).AddYears(3)
     Set-Content -LiteralPath $stamp -Value $certificate.Thumbprint -Encoding Ascii
 }
-Start-Process -FilePath $exe -ArgumentList $certificate.Thumbprint -WindowStyle Normal
+$launchArguments = @($certificate.Thumbprint)
+if ($Background) {
+    $launchArguments += '--background'
+    Start-Process -FilePath $exe -ArgumentList $launchArguments -WindowStyle Hidden
+} else {
+    Start-Process -FilePath $exe -ArgumentList $launchArguments -WindowStyle Normal
+}

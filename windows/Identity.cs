@@ -17,6 +17,14 @@ namespace IRemote
 
         public X509Certificate2 Certificate { get; private set; }
         public string Fingerprint { get; private set; }
+        public bool PairingOpen
+        {
+            get { lock (gate) return code != null && DateTime.UtcNow < expires; }
+        }
+        public void ClosePairing()
+        {
+            lock (gate) code = null;
+        }
         public string PairingStatus
         {
             get

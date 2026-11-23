@@ -1,39 +1,30 @@
+<img src="docs/media/icon-rounded.svg" width="72" height="72" alt="">
+
 # iremote
 
-Controla el escritorio de Windows desde un iPad mini con iOS 8. La conexión va directamente de un equipo al otro dentro de la red local y funciona sin Internet. El cliente es nativo para ARMv7 y el receptor de Windows usa .NET Framework y las APIs del sistema.
+Controla una PC con Windows desde un iPad mini con iOS 8 y jailbreak, dentro de tu red local y sin Internet.
+
+<img src="docs/media/flujo.svg" width="680" alt="Mostrar QR en Windows, vincular el iPad y conectar después">
 
 ## Inicio rápido
 
-1. En Windows, abre `Start-iRemote.ps1` desde la carpeta del receptor. Selecciona la dirección Wi-Fi o Ethernet de tu casa e inicia el receptor. Si Windows solicita acceso de red, habilita solo el perfil privado.
-2. Instala el paquete `.deb` en el iPad con jailbreak y abre iremote. Introduce la dirección y el puerto que ves en Windows.
-3. Pulsa **Generar código** en Windows y copia en el iPad la huella y el código. Puedes volver a conectar sin generar otro código. Si cambia la dirección de la PC, edítala en el iPad para reutilizar el vínculo.
+1. Extrae el receptor de [Releases](https://github.com/TaisenDev/iremote/releases) en una carpeta permanente y abre `Start-iRemote.ps1`.
+2. Pulsa **Mostrar QR** en Windows y **Escanear QR** en el iPad. Cuando se vinculen, puedes cerrar la ventana de Windows y el receptor seguirá en la bandeja.
+3. Para volver a entrar, toca **Conectar**. iremote busca el mismo equipo aunque cambie de IP. **Iniciar al entrar en Windows** es opcional.
 
-Si el firewall ya bloquea el receptor, crea una regla de entrada para `iRemote.Receiver.exe` y el puerto elegido, restringida al perfil **Privado** y a la subred local. El router no necesita redirección de puertos. Las redes de invitados o con aislamiento de clientes pueden impedir que ambos equipos se vean.
+Tienes modos **Táctil** y **Trackpad**, clic derecho con dos dedos, scroll, arrastre, teclado y teclas de Windows. El receptor comparte el monitor principal y se pausa cuando Windows se bloquea.
 
-## Controles
+## Acceso y seguridad
 
-| Gesto o control | Acción |
-| --- | --- |
-| Un toque en modo Táctil | Clic donde tocas |
-| Un dedo en modo Trackpad | Mover el puntero de forma relativa |
-| Dos dedos al tocar | Clic derecho |
-| Dos dedos al deslizar | Desplazamiento vertical u horizontal |
-| Tres dedos al tocar | Doble clic |
-| Mantener pulsado y mover | Arrastrar |
-| Teclado | Escribir texto con el teclado de iOS |
-| Teclas | Flechas, navegación, F1–F12, Ctrl, Alt, Shift y Win |
+Si Windows bloquea la conexión, ejecuta `Enable-PrivateLan.ps1` como administrador. Limita TCP y UDP al perfil **Privado**, a la subred local y al ejecutable. El router no necesita reenvío de puertos. Puedes pausar el acceso o revocar el vínculo desde Windows.
 
-Los modificadores se aplican a la siguiente tecla o atajo. El receptor comparte el monitor principal de la sesión interactiva. Al bloquear Windows se detiene el receptor. Las pantallas protegidas de Windows y las combinaciones reservadas como Ctrl+Alt+Supr quedan a cargo del sistema.
+El QR dura dos minutos y sirve una vez. El iPad valida la identidad TLS de la PC y guarda el vínculo en el Llavero. Windows protege la credencial con DPAPI. El descubrimiento no transmite credenciales.
 
-## Seguridad y consumo
+## Compilar
 
-El receptor escucha en la dirección IPv4 privada seleccionada y comprueba que el interlocutor pertenezca a la misma subred. El iPad verifica 96 bits de la huella SHA-256 del certificado antes de enviar su credencial por TLS 1.2. El código caduca en dos minutos, se cierra tras cinco intentos fallidos y se usa una sola vez. El vínculo duradero usa un secreto aleatorio de 256 bits en el llavero del iPad y protegido por DPAPI en Windows. Se puede revocar desde el receptor. Emparejar un iPad sustituye el vínculo anterior. La clave privada se genera localmente como no exportable.
+- iPad, con Theos y SDK 16.5 para ARMv7: `bash ios/build.sh`.
+- Windows, con .NET Framework 4.8: `powershell.exe -NoProfile -File windows/Build.ps1`.
 
-Durante una sesión el iPad pide las imágenes una a una. El receptor limita la imagen a 1024 × 768 y envía aproximadamente hasta 10 cuadros por segundo. Si la imagen coincide con la anterior, confirma la solicitud sin reenviar el JPEG. El receptor permanece inactivo mientras espera clientes. La eficiencia, la latencia y el alcance efectivos dependen del equipo y de la red.
+[Protocolo de conexión](docs/protocol.md) · [QRCoder, licencia MIT](windows/QRCoder.LICENSE.txt)
 
-## Compilación
-
-- **iPad:** configura `THEOS` con el SDK iOS 16.5 y soporte ARMv7. Ejecuta `bash ios/build.sh`. El paquete para iOS 8 queda en `dist/ios`.
-- **Windows:** ejecuta `powershell.exe -NoProfile -File windows/Build.ps1` en Windows de 64 bits con .NET Framework 4.8. La aplicación y su lanzador quedan en `dist/windows`.
-
-El código del iPad separa la sesión TLS, el llavero, la pantalla táctil y el controlador de interfaz. El receptor separa autenticación, protocolo, captura e inyección de entrada. El formato de mensajes está en [docs/protocol.md](docs/protocol.md).
+Creado por [TaisenDev](https://github.com/TaisenDev).

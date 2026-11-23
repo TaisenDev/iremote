@@ -1,6 +1,8 @@
 #import "IRController.h"
 #import "IRDesktopView.h"
 #import "IRPhoneStore.h"
+#import "IRDiscovery.h"
+#import "IRScanner.h"
 
 @interface IRKeyboard : UIView <UIKeyInput>
 @property (nonatomic, copy) void (^typed)(NSString *text);
@@ -25,6 +27,8 @@
     UITextField *_fingerprint;
     UITextField *_code;
     UIButton *_connect;
+    UIButton *_scan;
+    UIButton *_advanced;
     UIButton *_forget;
     UIView *_active;
     UIView *_bar;
@@ -47,6 +51,7 @@
     CGFloat _keyboardTop;
     uint8_t _modifiers;
     BOOL _keysVisible;
+    BOOL _manual;
 }
 static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 blue:0.70 alpha:1]; }
 
@@ -87,7 +92,7 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
     [self.view addSubview:_setup];
     _titleLabel = [self label:@"Conectar con tu PC" style:UIFontTextStyleHeadline parent:_setup];
     _titleLabel.font = [_titleLabel.font fontWithSize:_titleLabel.font.pointSize + 11];
-    _descriptionLabel = [self label:@"Abre iremote en Windows e inicia el receptor en la misma red."
+    _descriptionLabel = [self label:@"Abre iremote en Windows y escanea el QR para vincular el iPad."
                                style:UIFontTextStyleBody parent:_setup];
     _address = [self field:@"Dirección IPv4 de la PC" parent:_setup];
     _address.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
@@ -102,7 +107,12 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
     [_connect setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [_connect setTitleColor:[UIColor colorWithWhite:0.78 alpha:1] forState:UIControlStateDisabled];
     _connect.layer.cornerRadius = 8;
-    _forget = [self button:@"Emparejar otra vez" action:@selector(forget) parent:_setup];
+    _scan = [self button:@"Escanear QR" action:@selector(scan) parent:_setup];
+    _scan.backgroundColor = IRAccent();
+    [_scan setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    _scan.layer.cornerRadius = 8;
+    _advanced = [self button:@"Conexión manual" action:@selector(toggleManual) parent:_setup];
+    _forget = [self button:@"Olvidar esta PC" action:@selector(forget) parent:_setup];
     _setupStatus = [self label:nil style:UIFontTextStyleFootnote parent:_setup];
     _setupStatus.accessibilityTraits = UIAccessibilityTraitUpdatesFrequently;
 
@@ -147,12 +157,26 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
     _address.text = _saved[@"address"];
     _port.text = _saved[@"port"] ?: @"47921";
     _code.text = nil;
-    _code.hidden = _fingerprint.hidden = _saved != nil;
-    _forget.hidden = _saved == nil;
     _setup.hidden = NO;
     _active.hidden = YES;
     _connect.enabled = YES;
+    [self updateSetup];
+}
+- (void)updateSetup {
+    _descriptionLabel.text = _saved ? @"El iPad buscará tu PC en la red local." :
+        @"Abre iremote en Windows y escanea el QR para vincular el iPad.";
+    _address.hidden = _port.hidden = !_manual;
+    _code.hidden = _fingerprint.hidden = !_manual || _saved != nil;
+    _connect.hidden = !_manual && !_saved;
+    _scan.hidden = _manual || _saved != nil;
+    _forget.hidden = _saved == nil;
+    [_advanced setTitle:_manual ? @"Volver al acceso rápido" : @"Conexión manual" forState:UIControlStateNormal];
     [self.view setNeedsLayout];
+}
+- (void)toggleManual {
+    if (!_connect.enabled) return;
+    _manual = !_manual;
+    [self updateSetup];
 }
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
@@ -165,7 +189,7 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
     CGFloat x = (bounds.size.width - width) / 2;
     CGFloat y = 34;
     for (UIView *element in @[_titleLabel, _descriptionLabel, _address, _port,
-                              _fingerprint, _code, _connect, _forget, _setupStatus]) {
+                              _fingerprint, _code, _connect, _scan, _setupStatus, _advanced, _forget]) {
         if (element.hidden) continue;
         CGFloat height = [element isKindOfClass:[UILabel class]]
             ? MAX(22, ceil([element sizeThatFits:CGSizeMake(width, CGFLOAT_MAX)].height)) : 48;
@@ -194,33 +218,68 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
     [self.view layoutIfNeeded];
 }
 - (void)forget {
+    if (!_connect.enabled) return;
     if (!IRForgetDevice()) { _setupStatus.text = @"No se pudo borrar el vínculo del llavero."; return; }
     _saved = nil;
-    _setupStatus.text = @"Genera un código nuevo desde la PC.";
+    _manual = NO;
+    _setupStatus.text = @"Abre Mostrar QR en el receptor para volver a vincular.";
     [self showSetup];
 }
+- (void)scan {
+    if (self.presentedViewController || !_connect.enabled) return;
+    IRScanner *scanner = [[IRScanner alloc] init];
+    __weak typeof(self) owner = self;
+    scanner.onCode = ^(NSString *value) { [owner acceptCode:value]; };
+    [self presentViewController:scanner animated:YES completion:nil];
+}
+- (void)acceptCode:(NSString *)value {
+    NSArray *parts = [value componentsSeparatedByString:@"|"];
+    if (parts.count != 5 || ![parts[0] isEqualToString:@"iremote-pair:1"]) return;
+    [self connectAddress:parts[1] port:parts[2] pin:IRFingerprint(parts[3]) code:parts[4] discover:YES];
+}
 - (void)connect {
-    NSString *address = [_address.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    NSString *port = _port.text ?: @"";
+    NSString *address = _manual ? [_address.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]
+        : _saved[@"address"];
+    NSString *port = _manual ? (_port.text ?: @"") : _saved[@"port"];
+    NSData *pin = _saved[@"fingerprint"] ?: IRFingerprint(_fingerprint.text ?: @"");
+    [self connectAddress:address port:port pin:pin code:_saved ? nil : _code.text discover:!_manual];
+}
+- (void)connectAddress:(NSString *)address port:(NSString *)port pin:(NSData *)pin
+                  code:(NSString *)code discover:(BOOL)discover {
     NSCharacterSet *nonDigits = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789"] invertedSet];
     if (!IRIsPrivateIPv4(address) || [port rangeOfCharacterFromSet:nonDigits].location != NSNotFound ||
         port.integerValue < 1024 || port.integerValue > 65535) {
         _setupStatus.text = @"Revisa la dirección local y el puerto que muestra la PC.";
         [self.view setNeedsLayout]; return;
     }
-    NSData *pin = _saved[@"fingerprint"] ?: IRFingerprint(_fingerprint.text ?: @"");
-    if (pin.length != 12 || (!_saved && (_code.text.length != 10 ||
-        [_code.text rangeOfCharacterFromSet:nonDigits].location != NSNotFound))) {
-        _setupStatus.text = @"Introduce la huella y el código de 10 dígitos que muestra la PC.";
+    if (pin.length != 12 || (!_saved && (code.length != 10 ||
+        [code rangeOfCharacterFromSet:nonDigits].location != NSNotFound))) {
+        _setupStatus.text = discover ? @"El QR es inválido. Genera otro en la PC." :
+            @"Introduce la huella y el código de 10 dígitos que muestra la PC.";
         [self.view setNeedsLayout]; return;
     }
     _target = @{@"address": address, @"port": port, @"fingerprint": pin};
-    _pairCode = _saved ? nil : [_code.text dataUsingEncoding:NSASCIIStringEncoding];
+    _pairCode = code.length ? [code dataUsingEncoding:NSASCIIStringEncoding] : nil;
     _code.text = nil;
     [self.view endEditing:YES];
     _connect.enabled = NO;
     _retries = 0;
-    [self attempt];
+    if (discover) [self locateAndConnect]; else [self attempt];
+}
+- (void)locateAndConnect {
+    NSUInteger current = ++_generation;
+    _setupStatus.text = @"Buscando la PC en tu red…";
+    [self.view setNeedsLayout];
+    IRFindHost(_target[@"fingerprint"], _target[@"address"], ^(NSString *address) {
+        if (_generation != current || !_target) return;
+        if (address) {
+            NSMutableDictionary *updated = [_target mutableCopy];
+            updated[@"address"] = address;
+            updated[@"port"] = @"47921";
+            _target = updated;
+        }
+        [self attempt];
+    });
 }
 - (void)attempt {
     [_session stop];
@@ -262,7 +321,9 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
         _setupStatus.text = _sessionStatus.text;
         _retries++;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, _retries * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            if (_generation == current) [self attempt];
+            if (_generation == current) {
+                if (_manual) [self attempt]; else [self locateAndConnect];
+            }
         });
         return;
     }
@@ -271,7 +332,7 @@ static UIColor *IRAccent(void) { return [UIColor colorWithRed:0.26 green:0.24 bl
     [self.view setNeedsLayout];
 }
 - (void)disconnect {
-    if (!_session) return;
+    if (!_session && !_target) return;
     _generation++;
     [_session stop];
     _session = nil;

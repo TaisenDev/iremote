@@ -5,9 +5,13 @@
 <key>CFBundleIdentifier</key><string>com.taisendev.iremote</string>
 <key>CFBundleName</key><string>iremote</string>
 <key>CFBundleDisplayName</key><string>iremote</string>
-<key>CFBundleVersion</key><string>1</string>
-<key>CFBundleShortVersionString</key><string>0.1.0</string>
+<key>CFBundleVersion</key><string>2</string>
+<key>CFBundleShortVersionString</key><string>0.2.0</string>
 <key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleIconFiles</key><array><string>Icon-76</string></array>
+<key>UIPrerenderedIcon</key><true/>
+<key>NSCameraUsageDescription</key><string>Escanear el código de emparejamiento que muestra tu PC.</string>
+<key>NSLocalNetworkUsageDescription</key><string>Encontrar tu PC y conectar dentro de tu red local.</string>
 <key>CFBundleURLTypes</key><array><dict>
 <key>CFBundleURLName</key><string>com.taisendev.iremote</string>
 <key>CFBundleURLSchemes</key><array><string>iremote</string></array>

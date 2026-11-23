@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="132" viewBox="0 0 720 132" role="img" aria-labelledby="title">
+<title id="title">iremote: Mostrar QR, Vincular iPad, Conectar</title>
+<rect width="720" height="132" rx="16" fill="#232063"/>
+<path d="M240 21v90m240-90v90" fill="none" stroke="#D5C9FF" opacity=".25"/>
+<g font-family="system-ui, sans-serif">
+<text x="28" y="56" fill="#D5C9FF" font-size="22" font-weight="700">Mostrar QR</text>
+<text x="28" y="86" fill="#F7F5FF" font-size="15">Desde Windows</text>
+<text x="268" y="56" fill="#D5C9FF" font-size="22" font-weight="700">Vincular iPad</text>
+<text x="268" y="86" fill="#F7F5FF" font-size="15">Escanea una vez</text>
+<text x="508" y="56" fill="#D5C9FF" font-size="22" font-weight="700">Conectar</text>
+<text x="508" y="86" fill="#F7F5FF" font-size="15">Red local</text>
+</g>
+</svg>

@@ -1,8 +1,12 @@
-# Protocolo de iremote 0.1
+# Protocolo de iremote
 
 El iPad es el cliente TCP. Se establece TLS 1.2 antes de transmitir cualquier mensaje. El certificado de Windows se verifica contra los primeros 12 bytes de SHA-256 de su DER, introducidos localmente durante la configuración. No se instala el certificado como autoridad de confianza.
 
 Los mensajes se componen de un byte de tipo, cuatro bytes de longitud en orden de red y el cuerpo. El receptor procesa una sesión a la vez. El lector rechaza comandos que superen 8192 bytes y valida la longitud de cada comando. Las solicitudes de imagen tienen una única respuesta. Los mensajes de entrada no requieren respuesta.
+
+## Vinculación y descubrimiento
+
+Windows muestra localmente un QR con la dirección de respaldo, el puerto, la huella y un código temporal. El iPad conserva la huella y el secreto tras el primer emparejamiento. Para localizar esa identidad después, envía `IRLAN1` y 12 bytes aleatorios por UDP al puerto 47921 de la subred. Windows devuelve los 18 bytes, dos bytes del puerto TCP y la huella de 12 bytes. El iPad usa la IP que originó la respuesta, vuelve a validar la huella dentro de TLS y solo entonces transmite la credencial. El anuncio por UDP no concede acceso.
 
 | Tipo | Dirección | Cuerpo |
 | --- | --- | --- |

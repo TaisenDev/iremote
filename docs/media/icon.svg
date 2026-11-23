@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+<title id="title">iremote · monitor con puntero</title>
+<path fill="#3734A3" d="M0 0h256v256H0z"/>
+<path fill="#F7F5FF" d="M53 55h150c13 0 23 10 23 23v83c0 13-10 23-23 23h-34l-11-17h45c3 0 6-3 6-6V78c0-3-3-6-6-6H53c-3 0-6 3-6 6v83c0 3 3 6 6 6h55v17H53c-13 0-23-10-23-23V78c0-13 10-23 23-23Zm48 141h19v16a2 2 0 0 1-2 2H84v-8c0-6 5-10 11-10h6Z"/>
+<path fill="#D5C9FF" d="M119 105c0-4 4-6 7-4l60 37c4 2 3 7-1 8l-24 5 15 28c1 2 0 4-2 5l-13 7c-2 1-4 0-5-2l-15-27-16 18c-3 3-7 1-7-3l1-72Z"/>
+</svg>

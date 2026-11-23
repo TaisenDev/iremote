@@ -18,6 +18,7 @@ typedef struct {
 } IRChannel;
 
 BOOL IRIsPrivateIPv4(NSString *address) {
+    if (!address.length) return NO;
     struct in_addr parsed;
     if (inet_pton(AF_INET, address.UTF8String, &parsed) != 1) return NO;
     uint32_t value = ntohl(parsed.s_addr);

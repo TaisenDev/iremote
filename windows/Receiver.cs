@@ -64,7 +64,7 @@ namespace IRemote
         {
             this.identity = identity;
             this.network = network;
-            listener = new TcpListener(network.Address, port);
+            listener = new TcpListener(network == null ? IPAddress.Any : network.Address, port);
             listener.ExclusiveAddressUse = true;
             listener.Start(2);
             worker = new Thread(Listen) { IsBackground = true, Name = "iRemote LAN" };
@@ -85,7 +85,10 @@ namespace IRemote
                     lock (gate)
                     {
                         if (stopped) return;
-                        if (!network.Contains(((IPEndPoint)client.Client.RemoteEndPoint).Address)) continue;
+                        var local = ((IPEndPoint)client.Client.LocalEndPoint).Address;
+                        var remote = ((IPEndPoint)client.Client.RemoteEndPoint).Address;
+                        if (network != null ? !network.Contains(remote)
+                            : !LanAddress.List().Any(item => item.Address.Equals(local) && item.Contains(remote))) continue;
                         peer = client;
                     }
                     try { Serve(client); }
